@@ -6,7 +6,9 @@ using System.Drawing;
 using System.Linq;
 using System.Text;
 using System.Windows.Forms;
-using Lib_TcpServer;
+using System.Net.Sockets;
+using System.Net;
+using System.Threading;
 
 namespace Festo_Welcome
 {
@@ -15,66 +17,60 @@ namespace Festo_Welcome
         public Form1()
         {
             InitializeComponent();
+            Control.CheckForIllegalCrossThreadCalls = false;
         }
-        TcpServer mTcpServer;
+        C_TcpServer mTcpServer;
+        
 
         private void label1_Click(object sender, EventArgs e)
         {
-            if (mTcpServer.IsRunning)
-            {
-                try
-                {
-                    mTcpServer.SendMessage("SOS");
-                    InvokeChangeLabelText(lbl_Status, "sent");
-                }
-                catch (Exception)
-                {
+            //if (mTcpServer.IsRunning)
+            //{
+            //    try
+            //    {
+            //        mTcpServer.SendMessage("SOS");
+            //        InvokeChangeLabelText(lbl_Status, "sent");
+            //    }
+            //    catch (Exception)
+            //    {
 
-                }                
-            }
+            //    }                
+            //}
             
         }
 
         private void Form1_Load(object sender, EventArgs e)
         {
-            mTcpServer = new TcpServer(60000);
-            mTcpServer.DataReceive += new EventHandler<TCPEventArgs>(mTcpServer_DataReceive);
-            mTcpServer.ClientConnected += new EventHandler<TCPEventArgs>(mTcpServer_ClientConnected);
-            mTcpServer.ClientDisconnected += new EventHandler<TCPEventArgs>(mTcpServer_ClientDisconnected);
-            mTcpServer.Start();
+            mTcpServer = new C_TcpServer(this, 60000);
+            mTcpServer.Say = delegate(string msg) { this.updateGUI(msg); };
+            mTcpServer.Run();
+        }
+
+        void updateGUI(string content)
+        {
+            lbl_Status.Text = content;
+            if (content=="已响应")
+            {
+                if (MessageBox.Show("已处理", "Message", MessageBoxButtons.OK,MessageBoxIcon.None, MessageBoxDefaultButton.Button1, MessageBoxOptions.ServiceNotification) == DialogResult.OK)
+                {
+                    linkLabel1.Enabled = true;
+                    lbl_Status.Text = "已确认";
+                }
+                
+            }
         }
 
         private void Form1_FormClosing(object sender, FormClosingEventArgs e)
         {
-            mTcpServer.Stop();
-            mTcpServer.DataReceive -= new EventHandler<TCPEventArgs>(mTcpServer_DataReceive);
-            mTcpServer.ClientConnected -= new EventHandler<TCPEventArgs>(mTcpServer_ClientConnected);
-            mTcpServer.ClientDisconnected -= new EventHandler<TCPEventArgs>(mTcpServer_ClientDisconnected);
+            
         }
 
         private void pictureBox1_Click(object sender, EventArgs e)
         {
             this.Close();
         }
-        void mTcpServer_ClientDisconnected(object sender, TCPEventArgs e)
-        {
-            InvokeChangeLabelText(lbl_Status, e._handle.RemoteEndPoint.ToString() + " DisConnected");
-
-        }
-
-        void mTcpServer_ClientConnected(object sender, TCPEventArgs e)
-        {
-            InvokeChangeLabelText(lbl_Status, e._handle.RemoteEndPoint.ToString() + " Connected");
-        }
-
-        void mTcpServer_DataReceive(object sender, TCPEventArgs e)
-        {
-            if (true)
-            {
-                MessageBox.Show("已处理");
-            }
-        }
-
+       
+        #region 委托
         protected delegate void ChangeLabelHandler(Label LabelCtrl, string Txt);
         void InvokeChangeLabelText(Label LabelCtrl, string Txt)
         {
@@ -129,6 +125,15 @@ namespace Festo_Welcome
         void AddItem(ListBox listBoxCtrl, string Txt)
         {
             listBoxCtrl.Items.Add(Txt);
+        } 
+        #endregion
+
+        private void linkLabel1_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
+        {
+            if (mTcpServer.sendSOS())
+            {
+                linkLabel1.Enabled = false;
+            }
         }
     }
 }
