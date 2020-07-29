@@ -74,6 +74,7 @@ namespace Festo_Welcome
                 catch (IndexOutOfRangeException)
                 {
                     //say(ex.Message + "ops...restart\n");
+                    mainForm.linkLabel1.Enabled = true;
                     say("可能是客户端关闭了连接。");
                     break;
                 }

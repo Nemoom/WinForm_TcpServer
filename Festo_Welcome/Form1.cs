@@ -9,6 +9,7 @@ using System.Windows.Forms;
 using System.Net.Sockets;
 using System.Net;
 using System.Threading;
+using System.Threading.Tasks;
 
 namespace Festo_Welcome
 {
@@ -37,7 +38,7 @@ namespace Festo_Welcome
             //    }                
             //}
             
-        }
+        }       
 
         private void Form1_Load(object sender, EventArgs e)
         {
@@ -133,6 +134,17 @@ namespace Festo_Welcome
             if (mTcpServer.sendSOS())
             {
                 linkLabel1.Enabled = false;
+                Thread t = new Thread(() =>
+                    {
+                        Thread.Sleep(10000000);
+                    });
+                t.Start();
+                bool isOver = t.Join(60000);
+                if (!isOver)
+                {                   
+                    linkLabel1.Enabled = true;
+                    t.Abort();
+                }
             }
         }
     }
