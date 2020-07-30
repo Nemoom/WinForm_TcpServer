@@ -47,6 +47,21 @@ namespace Festo_Welcome
             mTcpServer.Run();
         }
 
+        private void enableControl()
+        {
+            var task = Task.Run(() =>
+            {
+                while (true)
+                {
+                    Thread.Sleep(200);
+                }
+            });
+            if (task.Wait(60000) == false)
+            {
+                linkLabel1.Enabled = true;
+            }
+        }
+
         void updateGUI(string content)
         {
             lbl_Status.Text = content;
@@ -134,17 +149,52 @@ namespace Festo_Welcome
             if (mTcpServer.sendSOS())
             {
                 linkLabel1.Enabled = false;
-                Thread t = new Thread(() =>
-                    {
-                        Thread.Sleep(10000000);
-                    });
-                t.Start();
-                bool isOver = t.Join(60000);
-                if (!isOver)
-                {                   
-                    linkLabel1.Enabled = true;
-                    t.Abort();
-                }
+                //Thread t = new Thread(() =>
+                //    {
+                //        Thread.Sleep(10000000);
+                //    });
+                //t.Start();
+                //bool isOver = t.Join(60000);
+                //if (!isOver)
+                //{                   
+                //    linkLabel1.Enabled = true;
+                //    t.Abort();
+                //}
+                ThreadStart start = delegate
+                {
+                    enableControl();
+                };
+                Thread tStart = new Thread(start);
+                tStart.IsBackground = true;
+                tStart.Start();
+            }
+        }
+        class Timeout
+        {
+            //属性
+            // 设定超时间隔为1000ms
+            private readonly int TimeoutInterval = 1000;
+            // lastTicks 用于存储新建操作开始时的时间
+            public long lastTicks;
+            // 用于存储操作消耗的时间
+            public long elapsedTicks;
+
+            //构造函数
+            public Timeout(int Interval)
+            {
+                TimeoutInterval = Interval;
+                lastTicks = DateTime.Now.Ticks;
+            }
+            public bool IsTimeout()
+            {
+                elapsedTicks = DateTime.Now.Ticks - lastTicks;
+                TimeSpan span = new TimeSpan(elapsedTicks);
+                double diff = span.TotalSeconds;
+                if (diff > TimeoutInterval)
+                    return true;
+                else
+                    return false;
+
             }
         }
     }

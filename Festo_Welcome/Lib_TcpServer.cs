@@ -13,6 +13,7 @@ namespace Festo_Welcome
         private Form1 mainForm = null;
         public int Port;
         Socket server, worker;
+        public bool Connected = false;
 
         public C_TcpServer(Form1 form, int port)
         {
@@ -52,6 +53,7 @@ namespace Festo_Welcome
             worker = server.Accept();
             say(string.Empty);
             say("接受了一个外部连接 " + worker.RemoteEndPoint.ToString());
+            Connected = true;
             #region recv-send loop
             while (true)
             {
@@ -75,7 +77,8 @@ namespace Festo_Welcome
                 {
                     //say(ex.Message + "ops...restart\n");
                     mainForm.linkLabel1.Enabled = true;
-                    say("可能是客户端关闭了连接。");
+                    Connected = false;
+                    say("客户端已掉线");
                     break;
                 }
                 say("PLC 发送的 msg：");
@@ -96,9 +99,15 @@ namespace Festo_Welcome
         {
             try
             {
-                sendMsg("SOS");
-                say("请求已发送");
-                return true;
+                if (sendMsg("SOS")) {
+                    say("请求已发送");
+                    return true;
+                }
+                else
+                {
+                    return false;
+                }
+
             }
             catch (Exception)
             {
@@ -110,11 +119,16 @@ namespace Festo_Welcome
         {
             try
             {
-                if (worker!=null)
+                if (worker!= null && Connected)
                 {
                     worker.Send(System.Text.Encoding.Default.GetBytes(mStr));
+                    return true;
                 }
-                return true;
+                else
+                {
+                    return false;
+                }
+                
             }
             catch (Exception)
             {
