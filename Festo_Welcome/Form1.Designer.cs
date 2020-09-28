@@ -80,7 +80,7 @@
             this.linkLabel1.AutoSize = true;
             this.linkLabel1.BackColor = System.Drawing.Color.Transparent;
             this.linkLabel1.Font = new System.Drawing.Font("宋体", 15F);
-            this.linkLabel1.Location = new System.Drawing.Point(11, 852);
+            this.linkLabel1.Location = new System.Drawing.Point(373, 722);
             this.linkLabel1.Name = "linkLabel1";
             this.linkLabel1.Size = new System.Drawing.Size(112, 25);
             this.linkLabel1.TabIndex = 3;
@@ -105,6 +105,8 @@
             this.WindowState = System.Windows.Forms.FormWindowState.Maximized;
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.Form1_FormClosing);
             this.Load += new System.EventHandler(this.Form1_Load);
+            this.ResizeEnd += new System.EventHandler(this.Form1_ResizeEnd);
+            this.Resize += new System.EventHandler(this.Form1_Resize);
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();

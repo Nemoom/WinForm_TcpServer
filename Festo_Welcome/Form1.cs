@@ -197,5 +197,21 @@ namespace Festo_Welcome
 
             }
         }
+
+        private void Form1_Resize(object sender, EventArgs e)
+        {
+            double n_Width = (double)this.Width / (double)617;
+            double n_Height = (double)this.Height / (double)909;
+            linkLabel1.Location = new Point((int)(373 * n_Width), (int)(722 * n_Height));
+            FontFamily mFontFamily = linkLabel1.Font.FontFamily;
+            float mSize = 15;
+            float mSize_new = mSize * (float)(n_Width > n_Height ? n_Height : n_Width);
+            linkLabel1.Font = new System.Drawing.Font(mFontFamily, mSize_new);
+        }
+
+        private void Form1_ResizeEnd(object sender, EventArgs e)
+        {
+
+        }
     }
 }
